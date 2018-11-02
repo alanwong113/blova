@@ -1,4 +1,6 @@
 const clova = require('@line/clova-cek-sdk-nodejs');
+const blocklyManager = require('../app/blockly-manager');
+const xmlToHandler = require('../app/xmlToHandler');
 
 const launchAction = responseHelper => {
   responseHelper.setSimpleSpeech(
@@ -8,35 +10,31 @@ const launchAction = responseHelper => {
 };
 
 const intentAction = responseHelper => {
+  let xml = await s3Manager.load(XML_FILE_NAME);
+  let handlerList = xmlToHandler.parse(xml);
   const intent = responseHelper.getIntentName();
   const sessionId = responseHelper.getSessionId();
+  const session = responseHelper.getSessionAttributes();
+  var state;
+  if(session['state'] === undefined){
+	  state = 0;
+  }
+  else {
+	  state = session['state'];
+  }
   
-  switch (intent) {
-    case 'WhoIntent':
+  if(handlerList[state].intent==intent){
       responseHelper.setSimpleSpeech(
-        clova.SpeechBuilder.createSpeechText('バービー')
+          clova.SpeechBuilder.createSpeechText(handlerList[state].say)
+	  );
+	  responseHelper.setSessionAttributes({
+		  'state': state + 1;
+       });  
+  }
+  else {
+	  responseHelper.setSimpleSpeech(
+          clova.SpeechBuilder.createSpeechText('なんなん')
       );
-      responseHelper.setSessionAttributes({
-        'said': true
-      });
-      break;
-    case 'WhoReplyIntent':
-      const session = responseHelper.getSessionAttributes()
-      if (session['said']) {
-        responseHelper.setSimpleSpeech(
-          clova.SpeechBuilder.createSpeechText('バービーキュー！')
-        );
-      } else {
-        responseHelper.setSimpleSpeech(
-          clova.SpeechBuilder.createSpeechText('ううん')
-        );
-      }
-      break;
-    default:
-      responseHelper.setSimpleSpeech(
-        clova.SpeechBuilder.createSpeechText('なんなん')
-      );
-      break;
   }
 };
 
