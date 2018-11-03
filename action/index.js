@@ -1,15 +1,14 @@
 const clova = require('@line/clova-cek-sdk-nodejs');
-const blocklyManager = require('../app/blockly-manager');
 const xmlToHandler = require('../app/xmlToHandler');
 
-const launchAction = responseHelper => {
+const launchAction = async responseHelper => {
   responseHelper.setSimpleSpeech(
     clova.SpeechBuilder.createSpeechText('ノックノック')
   );
   responseHelper.setSessionAttributes({})
 };
 
-const intentAction = responseHelper => {
+const intentAction = async responseHelper => {
   let xml = await s3Manager.load(XML_FILE_NAME);
   let handlerList = xmlToHandler.parse(xml);
   const intent = responseHelper.getIntentName();
@@ -28,7 +27,7 @@ const intentAction = responseHelper => {
           clova.SpeechBuilder.createSpeechText(handlerList[state].say)
 	  );
 	  responseHelper.setSessionAttributes({
-		  'state': state + 1;
+		  'state': state + 1
        });  
   }
   else {
@@ -38,7 +37,7 @@ const intentAction = responseHelper => {
   }
 };
 
-const sessionEndedAction = responseHelper => {
+const sessionEndedAction = async responseHelper => {
 };
 
 module.exports = {
